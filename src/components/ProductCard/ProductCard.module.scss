@@ -1,0 +1,74 @@
+.card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: box-shadow 0.2s;
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+}
+
+.media {
+  object-fit: cover;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.description {
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.details {
+  margin-top: auto;
+}
+
+.price {
+  font-weight: 700;
+  color: #1976d2;
+  margin-bottom: 8px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.adminActions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
