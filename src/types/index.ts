@@ -33,24 +33,25 @@ export interface User {
 
 // Типы для аутентификации
 export interface LoginRequest {
-  username: string;
+  email: string;    // изменено с username на email
   password: string;
 }
 
 export interface RegisterRequest {
   username: string;
-  email: string;
+  email: string;    // уже было email, оставляем
   password: string;
 }
 
 export interface AuthResponse {
-  token: string;
+  access_token: string;  // изменено с token на access_token
   user: User;
 }
 
 // Типы для корзины (на бэкенде)
 export interface CartItem {
   id: string;
+  userId: string;
   productId: string;
   product: Product;
   quantity: number;
@@ -75,16 +76,16 @@ export interface OrderItem {
   productId: string;
   product: Product;
   quantity: number;
-  price: number; // цена на момент заказа
+  price: number;
 }
 
 export interface Order {
   id: string;
   userId: string;
   items: OrderItem[];
-  total: number;
+  totalAmount: string | number; // добавлено (сервер возвращает строку)
   status: OrderStatus;
-  address: string;
+  shippingAddress: string;      // изменено с address
   phone: string;
   paymentMethod: 'cash' | 'card' | 'online';
   createdAt: string;
@@ -92,7 +93,7 @@ export interface Order {
 }
 
 export interface CreateOrderDto {
-  address: string;
+  shippingAddress: string;  // изменено с address
   phone: string;
   paymentMethod: 'cash' | 'card' | 'online';
 }

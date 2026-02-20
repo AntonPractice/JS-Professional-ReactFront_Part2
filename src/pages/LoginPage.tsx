@@ -15,7 +15,7 @@ import { useLoginMutation } from '../store/api';
 import { setCredentials } from '../store/authSlice';
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');      // переименовано с username
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -25,11 +25,13 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await login({ username, password }).unwrap();
+      const response = await login({ email, password }).unwrap(); // передаём email
+      console.log('Login response:', response);
       dispatch(setCredentials(response));
       navigate('/');
-    } catch (err) {
-      setError('Неверное имя пользователя или пароль');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err?.data?.message || 'Неверный email или пароль');
     }
   };
 
@@ -42,9 +44,10 @@ const LoginPage: React.FC = () => {
         {error && <Alert severity="error">{error}</Alert>}
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Имя пользователя"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            label="Email"
+            type="email"                        // тип email
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             fullWidth
             margin="normal"
             required

@@ -1,7 +1,12 @@
 import React from 'react';
 import { Container, Typography } from '@mui/material';
 import ProductList from '../components/ProductList/ProductList';
-import { useGetProductsQuery, useCreateProductMutation, useUpdateProductMutation, useDeleteProductMutation } from '../store/api';
+import {
+  useGetProductsQuery,
+  useCreateProductMutation,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+} from '../store/api';
 import { useAuth } from '../hooks/useAuth';
 import type { CreateProductDto, UpdateProductDto } from '../types';
 
@@ -13,14 +18,11 @@ const AdminProductsPage: React.FC = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
 
-  // Указываем типы параметров
+  // Убираем вызов createProduct из этого обработчика,
+  // теперь он только для оповещения (может триггерить refetch)
   const handleAddProduct = async (newProduct: CreateProductDto) => {
-    try {
-      await createProduct(newProduct).unwrap();
-      refetch();
-    } catch (err) {
-      console.error('Ошибка добавления товара', err);
-    }
+    // Здесь можно, например, показать уведомление или просто обновить список
+    refetch(); // обновляем список после добавления (хотя инвалидация тегов уже должна это сделать)
   };
 
   const handleUpdateProduct = async (id: string, updated: UpdateProductDto) => {
@@ -51,7 +53,7 @@ const AdminProductsPage: React.FC = () => {
         isAdmin={isAdmin}
         onUpdateProduct={handleUpdateProduct}
         onDeleteProduct={handleDeleteProduct}
-        onAddProduct={handleAddProduct} // теперь тип совпадает
+        onAddProduct={handleAddProduct}
       />
     </Container>
   );

@@ -13,10 +13,12 @@ import {
   FormControlLabel,
   Button,
   Grid,
+  CardActionArea, // <-- добавлен импорт
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from 'react-router-dom'; // <-- добавлен импорт
 import placeholder from '../../assets/placeholder.png';
 import styles from './ProductCard.module.scss';
 import type { Product, ProductBrand, ProductCategory, ProductPower } from '../../types';
@@ -25,7 +27,7 @@ import { useDeleteProductMutation, useUpdateProductMutation } from '../../store/
 interface ProductCardProps {
   product: Product;
   isAdmin: boolean;
-  onSave?: (id: string, updatedProduct: Partial<Product>) => void; // опционально, для обратной связи
+  onSave?: (id: string, updatedProduct: Partial<Product>) => void;
   onDelete?: (id: string) => void;
 }
 
@@ -50,6 +52,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     inStock: product.inStock,
     images: product.images,
   });
+  const navigate = useNavigate(); // <-- хук для навигации
 
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
@@ -59,10 +62,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
   };
 
   const handleSave = async () => {
+    const productToUpdate = {
+      ...editedProduct,
+      price: editedProduct.price ? Number(editedProduct.price) : undefined,
+    };
     try {
-      await updateProduct({ id: product.id, body: editedProduct }).unwrap();
+      await updateProduct({ id: product.id, body: productToUpdate }).unwrap();
       setIsEditing(false);
-      if (onSave) onSave(product.id, editedProduct);
+      if (onSave) onSave(product.id, productToUpdate);
     } catch (err) {
       console.error('Ошибка обновления товара:', err);
     }
@@ -82,7 +89,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
     setIsEditing(false);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // предотвращаем переход на детальную страницу
     if (window.confirm('Удалить товар?')) {
       try {
         await deleteProduct(product.id).unwrap();
@@ -93,20 +101,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
 
+  const handleCardClick = () => {
+    // Если не в режиме редактирования, переходим на страницу товара
+    if (!isEditing) {
+      navigate(`/products/${product.id}`);
+    }
+  };
+
   const previewImage = product.images?.[0] || placeholder;
 
-  return (
-    <Card className={styles.card}>
-      <CardMedia
-        component="img"
-        height="180"
-        image={previewImage}
-        alt={product.name}
-        className={styles.media}
-      />
-      <CardContent className={styles.content}>
-        {isEditing ? (
+  // Если режим редактирования — показываем форму без обёртки CardActionArea
+  if (isEditing) {
+    return (
+      <Card className={styles.card}>
+        <CardContent className={styles.content}>
           <Box className={styles.editForm}>
+            {/* ... поля редактирования (без изменений) ... */}
             <TextField
               label="Название"
               value={editedProduct.name || ''}
@@ -237,42 +247,63 @@ const ProductCard: React.FC<ProductCardProps> = ({
               </Button>
             </Box>
           </Box>
-        ) : (
-          <>
-            <Typography variant="h6" className={styles.title}>
-              {product.name}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Обычный режим — карточка кликабельна
+  return (
+    <Card className={styles.card}>
+      <CardActionArea onClick={handleCardClick} disabled={isEditing}>
+        <CardMedia
+          component="img"
+          height="180"
+          image={previewImage}
+          alt={product.name}
+          className={styles.media}
+        />
+        <CardContent className={styles.content}>
+          <Typography variant="h6" className={styles.title}>
+            {product.name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" className={styles.description}>
+            {product.description}
+          </Typography>
+          <Box className={styles.details}>
+            <Typography variant="body1" className={styles.price}>
+              {product.price.toLocaleString()} ₽
             </Typography>
-            <Typography variant="body2" color="text.secondary" className={styles.description}>
-              {product.description}
-            </Typography>
-            <Box className={styles.details}>
-              <Typography variant="body1" className={styles.price}>
-                {product.price.toLocaleString()} ₽
-              </Typography>
-              <Box className={styles.chips}>
-                <Chip label={product.category} size="small" />
-                <Chip label={product.brand} size="small" />
-                <Chip label={`${product.power} BTU`} size="small" />
-                <Chip
-                  label={product.inStock ? 'В наличии' : 'Нет в наличии'}
-                  color={product.inStock ? 'success' : 'default'}
-                  size="small"
-                />
-              </Box>
+            <Box className={styles.chips}>
+              <Chip label={product.category} size="small" />
+              <Chip label={product.brand} size="small" />
+              <Chip label={`${product.power} BTU`} size="small" />
+              <Chip
+                label={product.inStock ? 'В наличии' : 'Нет в наличии'}
+                color={product.inStock ? 'success' : 'default'}
+                size="small"
+              />
             </Box>
-          </>
-        )}
-        {isAdmin && !isEditing && (
-          <Box className={styles.adminActions}>
-            <IconButton onClick={() => setIsEditing(true)} size="small" disabled={isDeleting}>
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton onClick={handleDelete} size="small" color="error" disabled={isDeleting}>
-              <CloseIcon fontSize="small" />
-            </IconButton>
           </Box>
-        )}
-      </CardContent>
+        </CardContent>
+      </CardActionArea>
+      {isAdmin && (
+        <Box className={styles.adminActions}>
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation(); // не переходить на детальную
+              setIsEditing(true);
+            }}
+            size="small"
+            disabled={isDeleting}
+          >
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton onClick={handleDelete} size="small" color="error" disabled={isDeleting}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      )}
     </Card>
   );
 };

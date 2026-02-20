@@ -1,15 +1,18 @@
 import React from 'react';
 import { Paper, Typography, Box, Divider, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import type { Cart } from '../../types';
+import type { CartItem } from '../../types';
 
 interface CartSummaryProps {
-  cart: Cart;
+  items: CartItem[]; // теперь массив, а не объект Cart
 }
 
-const CartSummary: React.FC<CartSummaryProps> = ({ cart }) => {
+const CartSummary: React.FC<CartSummaryProps> = ({ items }) => {
   const navigate = useNavigate();
-  const total = cart.items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const total = items.reduce((sum, item) => {
+    const price = typeof item.product.price === 'number' ? item.product.price : parseFloat(item.product.price) || 0;
+    return sum + price * item.quantity;
+  }, 0);
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -17,7 +20,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ cart }) => {
         Итого
       </Typography>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-        <Typography>Товары ({cart.items.length})</Typography>
+        <Typography>Товары ({items.length})</Typography>
         <Typography>{total.toLocaleString()} ₽</Typography>
       </Box>
       <Divider sx={{ my: 1 }} />
@@ -30,7 +33,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({ cart }) => {
       <Button
         variant="contained"
         fullWidth
-        onClick={() => navigate('/checkout')} // страница оформления
+        onClick={() => navigate('/checkout')}
       >
         Оформить заказ
       </Button>

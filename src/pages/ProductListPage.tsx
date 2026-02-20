@@ -24,7 +24,7 @@ const ProductListPage: React.FC = () => {
   const [inStock, setInStock] = useState('');
   const limit = 6;
 
-  const { data, error, isLoading, refetch } = useGetProductsQuery({
+  const { data, error, isLoading } = useGetProductsQuery({
     page,
     limit,
     category: category || undefined,

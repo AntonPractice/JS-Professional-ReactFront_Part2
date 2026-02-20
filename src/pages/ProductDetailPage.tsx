@@ -19,17 +19,24 @@ const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: product, error, isLoading } = useGetProductByIdQuery(id!);
   const { user } = useAuth();
-  const [addToCart] = useAddToCartMutation();
+  const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
 
   if (isLoading) return <CircularProgress />;
   if (error || !product) return <Alert severity="error">Товар не найден</Alert>;
 
   const handleAddToCart = async () => {
+    console.log('Добавление в корзину, товар ID:', product.id);
     try {
-      await addToCart({ productId: product.id }).unwrap();
+      const result = await addToCart({ productId: product.id }).unwrap();
+      console.log('Успешно добавлено, результат:', result);
       navigate('/cart');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Ошибка добавления в корзину', err);
+      if (err.status === 401) {
+        alert('Необходимо авторизоваться');
+      } else {
+        alert('Ошибка при добавлении в корзину');
+      }
     }
   };
 
@@ -66,14 +73,18 @@ const ProductDetailPage: React.FC = () => {
             <Typography variant="h5" color="primary" sx={{ mb: 2 }}>
               {product.price.toLocaleString()} ₽
             </Typography>
-            {user && (
+            {user ? (
               <Button
                 variant="contained"
                 size="large"
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={!product.inStock || isAdding}
               >
-                Добавить в корзину
+                {isAdding ? 'Добавление...' : 'Добавить в корзину'}
+              </Button>
+            ) : (
+              <Button variant="outlined" size="large" onClick={() => navigate('/login')}>
+                Войдите, чтобы купить
               </Button>
             )}
           </Grid>
