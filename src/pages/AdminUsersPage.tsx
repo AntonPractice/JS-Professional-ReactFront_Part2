@@ -4,7 +4,7 @@ import { useGetUsersQuery } from '../store/api';
 import UserList from '../components/UserList/UserList';
 
 const AdminUsersPage: React.FC = () => {
-  const { data, error, isLoading } = useGetUsersQuery();
+  const { data: users, error, isLoading } = useGetUsersQuery(); // data — это массив
 
   if (isLoading) return <CircularProgress />;
   if (error) return <Alert severity="error">Ошибка загрузки пользователей</Alert>;
@@ -15,10 +15,9 @@ const AdminUsersPage: React.FC = () => {
         Управление пользователями
       </Typography>
       <UserList
-        users={data?.data || []}
+        users={users || []} // передаём массив напрямую
         isAdmin={true}
         onSelectUser={(user) => {
-          // Можно реализовать переход на профиль, например:
           console.log('Selected user:', user);
         }}
       />

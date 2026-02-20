@@ -15,6 +15,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useDispatch } from 'react-redux';
 import styles from './MainLayout.module.scss';
 import { logout } from '../store/authSlice';
+import { useGetCartQuery } from '../store/api';
+import { api } from '../store/api'; // <-- импортируем api
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -24,11 +26,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { data: cartItems } = useGetCartQuery(undefined, { skip: !isAuthenticated });
 
   const handleLogout = () => {
     dispatch(logout());
+    dispatch(api.util.resetApiState()); // <-- сброс кеша RTK Query
     navigate('/login');
   };
+
+  const cartItemsCount = cartItems?.length || 0;
 
   return (
     <div className={styles.layout}>
@@ -46,7 +52,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   Товары
                 </Button>
                 <IconButton color="inherit" component={Link} to="/cart">
-                  <Badge badgeContent={0} color="secondary">
+                  <Badge badgeContent={cartItemsCount} color="secondary">
                     <ShoppingCartIcon />
                   </Badge>
                 </IconButton>

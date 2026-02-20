@@ -26,6 +26,8 @@ export const api = createApi({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
+      console.log('Token in prepareHeaders:', token);
+
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -70,9 +72,9 @@ export const api = createApi({
       providesTags: (result) =>
         result
           ? [
-              ...result.data.map(({ id }) => ({ type: 'Product' as const, id })),
-              { type: 'Product', id: 'LIST' },
-            ]
+            ...result.data.map(({ id }) => ({ type: 'Product' as const, id })),
+            { type: 'Product', id: 'LIST' },
+          ]
           : [{ type: 'Product', id: 'LIST' }],
     }),
     getProductById: builder.query<Product, string>({
@@ -104,15 +106,17 @@ export const api = createApi({
     }),
 
     // ========== Пользователи ==========
-    getUsers: builder.query<PaginatedResponse<User>, void>({
+    getUsers: builder.query<User[], void>({  // <-- изменён тип возврата
       query: () => '/users',
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.data.map(({ id }) => ({ type: 'User' as const, id })),
-              { type: 'User', id: 'LIST' },
-            ]
-          : [{ type: 'User', id: 'LIST' }],
+      providesTags: (result) => {
+        if (result) {
+          return [
+            ...result.map(({ id }) => ({ type: 'User' as const, id })),
+            { type: 'User', id: 'LIST' },
+          ];
+        }
+        return [{ type: 'User', id: 'LIST' }];
+      },
     }),
     getUserById: builder.query<User, string>({
       query: (id) => `/users/${id}`,
@@ -135,7 +139,7 @@ export const api = createApi({
     }),
 
     // ========== Корзина ==========
-    getCart: builder.query<Cart, void>({
+    getCart: builder.query<CartItem[], void>({  // изменено с Cart на CartItem[]
       query: () => '/cart',
       providesTags: ['Cart'],
     }),
@@ -176,9 +180,9 @@ export const api = createApi({
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: 'Order' as const, id })),
-              { type: 'Order', id: 'LIST' },
-            ]
+            ...result.map(({ id }) => ({ type: 'Order' as const, id })),
+            { type: 'Order', id: 'LIST' },
+          ]
           : [{ type: 'Order', id: 'LIST' }],
     }),
     getOrderById: builder.query<Order, string>({

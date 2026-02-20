@@ -3,10 +3,10 @@ import { Box, Typography, IconButton, TextField, Grid } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import styles from './Cart.module.scss';
 import { useRemoveFromCartMutation, useUpdateCartItemMutation } from '../../store/api';
-import type { CartItem } from '../../types';
+import type { CartItem as CartItemType } from '../../types';
 
 interface CartItemProps {
-  item: CartItem;
+  item: CartItemType;
 }
 
 const CartItem: React.FC<CartItemProps> = ({ item }) => {
@@ -30,20 +30,26 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
     }
   };
 
+  const product = item.product || {};
+  const price = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
+  const image = product.images?.[0] || '/placeholder.png';
+  const productName = product.name || 'Товар';
+  const totalPrice = price * (item.quantity || 1);
+
   return (
     <Box className={styles.cartItem}>
       <Grid container spacing={2} alignItems="center">
         <Grid item xs={2}>
           <img
-            src={item.product.images[0] || '/placeholder.png'}
-            alt={item.product.name}
+            src={image}
+            alt={productName}
             style={{ width: '100%', borderRadius: 4 }}
           />
         </Grid>
         <Grid item xs={4}>
-          <Typography variant="body1">{item.product.name}</Typography>
+          <Typography variant="body1">{productName}</Typography>
           <Typography variant="body2" color="text.secondary">
-            {item.product.price.toLocaleString()} ₽
+            {price.toLocaleString()} ₽
           </Typography>
         </Grid>
         <Grid item xs={2}>
@@ -57,7 +63,7 @@ const CartItem: React.FC<CartItemProps> = ({ item }) => {
         </Grid>
         <Grid item xs={2}>
           <Typography variant="body1">
-            {(item.product.price * item.quantity).toLocaleString()} ₽
+            {totalPrice.toLocaleString()} ₽
           </Typography>
         </Grid>
         <Grid item xs={2}>

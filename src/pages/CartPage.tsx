@@ -12,15 +12,20 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useClearCartMutation, useGetCartQuery } from '../store/api';
 import CartSummary from '../features/cart/CartSummary';
+import CartItemComponent from '../features/cart/CartItem';
 
 const CartPage: React.FC = () => {
-  const { data: cart, error, isLoading, refetch } = useGetCartQuery();
+  const { data: cartItems, error, isLoading } = useGetCartQuery(); // теперь массив
   const [clearCart] = useClearCartMutation();
   const navigate = useNavigate();
 
   if (isLoading) return <CircularProgress />;
   if (error) return <Alert severity="error">Ошибка загрузки корзины</Alert>;
-  if (!cart || cart.items.length === 0) {
+
+  const items = cartItems || [];
+  const cartExists = items.length > 0;
+
+  if (!cartExists) {
     return (
       <Container>
         <Typography variant="h5" gutterBottom>
@@ -36,7 +41,6 @@ const CartPage: React.FC = () => {
   const handleClearCart = async () => {
     try {
       await clearCart().unwrap();
-      refetch();
     } catch (err) {
       console.error('Ошибка очистки корзины', err);
     }
@@ -50,21 +54,21 @@ const CartPage: React.FC = () => {
       <Grid container spacing={3}>
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 2 }}>
-            {/* {cart.items.map((item) => (
-              <CartItem key={item.id} item={item} />
-            ))} */}
+            {items.map((item) => (
+              <CartItemComponent key={item.id} item={item} />
+            ))}
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
               <Button variant="outlined" color="error" onClick={handleClearCart}>
                 Очистить корзину
               </Button>
-              <Button variant="contained" onClick={() => navigate('/orders')}>
+              <Button variant="contained" onClick={() => navigate('/checkout')}>
                 Перейти к оформлению
               </Button>
             </Box>
           </Paper>
         </Grid>
         <Grid item xs={12} md={4}>
-          <CartSummary cart={cart} />
+          <CartSummary items={items} /> {/* передаём массив */}
         </Grid>
       </Grid>
     </Container>

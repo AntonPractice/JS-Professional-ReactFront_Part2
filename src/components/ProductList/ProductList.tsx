@@ -5,10 +5,13 @@ import {
   Pagination,
   Typography,
   CircularProgress,
+  Button,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import ProductCard from '../ProductCard/ProductCard';
+import AddProductModal from '../AddProductModal/AddProductModal'; // <-- импорт модалки
 import styles from './ProductList.module.scss';
-import type { Product } from '../../types';
+import type { Product, CreateProductDto } from '../../types';
 
 interface ProductListProps {
   products: Product[];
@@ -19,7 +22,7 @@ interface ProductListProps {
   onPageChange?: (page: number) => void;
   onUpdateProduct: (id: string, updated: Partial<Product>) => void;
   onDeleteProduct: (id: string) => void;
-  onAddProduct?: (newProduct: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => void; // новый опциональный проп
+  onAddProduct?: (newProduct: CreateProductDto) => void; // <-- добавлен проп
   pageSize?: number;
 }
 
@@ -32,12 +35,21 @@ const ProductList: React.FC<ProductListProps> = ({
   onPageChange,
   onUpdateProduct,
   onDeleteProduct,
+  onAddProduct, // <-- деструктуризация
   pageSize = 6,
 }) => {
+  const [modalOpen, setModalOpen] = useState(false);
   const totalPages = Math.ceil(total / pageSize);
 
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     if (onPageChange) onPageChange(value);
+  };
+
+  const handleAddProduct = (newProduct: CreateProductDto) => {
+    if (onAddProduct) {
+      onAddProduct(newProduct);
+    }
+    setModalOpen(false);
   };
 
   if (isLoading) {
@@ -50,6 +62,18 @@ const ProductList: React.FC<ProductListProps> = ({
 
   return (
     <div className={styles.productList}>
+      {isAdmin && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setModalOpen(true)}
+          >
+            Добавить товар
+          </Button>
+        </Box>
+      )}
+
       {products.length > 0 ? (
         <>
           <Grid container spacing={3} className={styles.grid}>
@@ -80,6 +104,12 @@ const ProductList: React.FC<ProductListProps> = ({
           Товары не найдены
         </Typography>
       )}
+
+      <AddProductModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onAdd={handleAddProduct}
+      />
     </div>
   );
 };

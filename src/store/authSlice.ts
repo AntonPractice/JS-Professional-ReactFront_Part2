@@ -1,9 +1,10 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { storage } from '../utils/storage';
+import type { User } from '../types';
 
 interface AuthState {
   token: string | null;
-  user: any | null; // замените any на ваш тип User
+  user: User | null;
 }
 
 const initialState: AuthState = {
@@ -15,13 +16,10 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setCredentials: (
-      state,
-      action: PayloadAction<{ token: string; user: any }>
-    ) => {
-      state.token = action.payload.token;
+    setCredentials: (state, action: PayloadAction<{ access_token: string; user: User }>) => {
+      state.token = action.payload.access_token;
       state.user = action.payload.user;
-      storage.setToken(action.payload.token);
+      storage.setToken(action.payload.access_token);
       storage.setUser(action.payload.user);
     },
     logout: (state) => {
