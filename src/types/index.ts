@@ -59,14 +59,14 @@ export interface CartItem {
   updatedAt: string;
 }
 
-export interface Cart {
-  id: string;
-  userId: string;
-  items: CartItem[];
-  total: number;
-  createdAt: string;
-  updatedAt: string;
-}
+// export interface Cart {
+//   id: string;
+//   userId: string;
+//   items: CartItem[];
+//   total: number;
+//   createdAt: string;
+//   updatedAt: string;
+// }
 
 // Типы для заказов
 export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
