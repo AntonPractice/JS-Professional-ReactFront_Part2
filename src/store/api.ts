@@ -7,7 +7,6 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
-  Cart,
   CartItem,
   Order,
   CreateOrderDto,
